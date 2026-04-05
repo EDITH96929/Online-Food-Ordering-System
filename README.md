@@ -192,7 +192,7 @@ FoodOrderingSystem/
 
 **1. Clone the repository**
 ```bash
-git clone https://github.com/yourusername/FoodOrderingSystem.git
+git clone https://github.com/EDITH96929/FoodOrderingSystem.git
 ```
 
 **2. Create the database**
@@ -361,13 +361,10 @@ This separation means database code is never mixed with UI code. If the database
 
 ## 👨‍💻 Built By
 
-**Group Project — [Your College Name]**
 
 | Name | Role |
 |------|------|
-| [Your Name] | Full Stack Development |
-| [Team Member 2] | Database Design |
-| [Team Member 3] | UI Design |
+| Sunil Kumar Swain | Full Stack Development |
 
 ---
 
