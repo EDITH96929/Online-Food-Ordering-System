@@ -1,0 +1,240 @@
+﻿@model List<FoodOrderingSystem.Models.Order>
+@{
+    ViewBag.Title = "Admin Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var stats = ViewBag.Stats as Dictionary<string, object>;
+    decimal revenue = stats != null ? (decimal)stats["TotalRevenue"] : 0;
+    int totalOrders = stats != null ? (int)stats["TotalOrders"] : 0;
+    int pending = stats != null ? (int)stats["PendingOrders"] : 0;
+    int outForDelivery = stats != null ? (int)stats["OutForDelivery"] : 0;
+    int delivered = stats != null ? (int)stats["Delivered"] : 0;
+    int totalUsers = stats != null ? (int)stats["TotalUsers"] : 0;
+    var topFoods = stats != null ? stats["TopFoods"] as List<string> : new List<string>();
+    var topCounts = stats != null ? stats["TopCounts"] as List<int> : new List<int>();
+    var revDays = stats != null ? stats["RevenueDays"] as List<string> : new List<string>();
+    var revAmounts = stats != null ? stats["RevenueAmounts"] as List<decimal> : new List<decimal>();
+    int maxCount = topCounts.Count > 0 ? topCounts.Max() : 1;
+    decimal maxRev = revAmounts.Count > 0 ? revAmounts.Max() : 1;
+}
+
+<h1 class="page-title">Dashboard</h1>
+
+<!-- Stats Row -->
+<div class="row g-3 mb-4">
+    <div class="col-md-2 col-sm-4">
+        <div class="card p-3 text-center">
+            <div style="font-size:1.6rem;font-weight:800;color:var(--green-dark)">
+                &#8377;@revenue.ToString("0")
+            </div>
+            <div style="font-size:0.78rem;color:var(--muted);margin-top:2px">Revenue</div>
+        </div>
+    </div>
+    <div class="col-md-2 col-sm-4">
+        <div class="card p-3 text-center">
+            <div style="font-size:1.6rem;font-weight:800;color:var(--text)">@totalOrders</div>
+            <div style="font-size:0.78rem;color:var(--muted);margin-top:2px">Total Orders</div>
+        </div>
+    </div>
+    <div class="col-md-2 col-sm-4">
+        <div class="card p-3 text-center">
+            <div style="font-size:1.6rem;font-weight:800;color:#854d0e">@pending</div>
+            <div style="font-size:0.78rem;color:var(--muted);margin-top:2px">Pending</div>
+        </div>
+    </div>
+    <div class="col-md-2 col-sm-4">
+        <div class="card p-3 text-center">
+            <div style="font-size:1.6rem;font-weight:800;color:#1e40af">@outForDelivery</div>
+            <div style="font-size:0.78rem;color:var(--muted);margin-top:2px">Delivering</div>
+        </div>
+    </div>
+    <div class="col-md-2 col-sm-4">
+        <div class="card p-3 text-center">
+            <div style="font-size:1.6rem;font-weight:800;color:#166534">@delivered</div>
+            <div style="font-size:0.78rem;color:var(--muted);margin-top:2px">Delivered</div>
+        </div>
+    </div>
+    <div class="col-md-2 col-sm-4">
+        <div class="card p-3 text-center">
+            <div style="font-size:1.6rem;font-weight:800;color:#6d28d9">@totalUsers</div>
+            <div style="font-size:0.78rem;color:var(--muted);margin-top:2px">Users</div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row g-3 mb-4">
+
+    <!-- Revenue last 7 days -->
+    <div class="col-md-7">
+        <div class="card p-3">
+            <div style="font-weight:700;margin-bottom:1rem;font-size:0.95rem">
+                <i class="bi bi-bar-chart me-2 text-success"></i>Revenue — Last 7 Days
+            </div>
+            @if (revDays.Count == 0)
+            {
+                <div class="text-center py-3 text-muted" style="font-size:0.88rem">
+                    No revenue data yet
+                </div>
+            }
+            else
+            {
+                <div class="d-flex align-items-end gap-2"
+                     style="height:140px;padding-bottom:8px">
+                    @for (int i = 0; i < revDays.Count; i++)
+                    {
+                        decimal pct = maxRev > 0
+                            ? (revAmounts[i] / maxRev * 100m)
+                            : 0m;
+                        int barH = (int)(pct * 1.2m);
+                        <div class="d-flex flex-column align-items-center"
+                             style="flex:1;gap:4px">
+                            <div style="font-size:0.65rem;color:var(--muted);font-weight:600">
+                                &#8377;@revAmounts[i].ToString("0")
+                            </div>
+                            <div style="flex:1;display:flex;align-items:flex-end;width:100%">
+                                <div style="width:100%;height:@(barH)px;
+                                            background:var(--green);border-radius:6px 6px 0 0;
+                                            min-height:4px;transition:height 0.5s ease">
+                                </div>
+                            </div>
+                            <div style="font-size:0.65rem;color:var(--muted)">
+                                @revDays[i]
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Top food items -->
+    <div class="col-md-5">
+        <div class="card p-3">
+            <div style="font-weight:700;margin-bottom:1rem;font-size:0.95rem">
+                <i class="bi bi-trophy me-2 text-success"></i>Top Food Items
+            </div>
+            @if (topFoods.Count == 0)
+            {
+                <div class="text-center py-3 text-muted" style="font-size:0.88rem">
+                    No orders yet
+                </div>
+            }
+            else
+            {
+                <div class="d-flex flex-column gap-2">
+                    @for (int i = 0; i < topFoods.Count; i++)
+                    {
+                        int pct = maxCount > 0
+                            ? (topCounts[i] * 100 / maxCount)
+                            : 0;
+                        <div>
+                            <div class="d-flex justify-content-between mb-1">
+                                <span style="font-size:0.82rem;font-weight:600">
+                                    @(i + 1). @topFoods[i]
+                                </span>
+                                <span style="font-size:0.82rem;color:var(--muted)">
+                                    @topCounts[i] orders
+                                </span>
+                            </div>
+                            <div style="background:#f1f5f9;border-radius:99px;height:7px">
+                                <div style="width:@(pct)%;background:var(--green);
+                                            border-radius:99px;height:7px"></div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Orders Table -->
+<div class="card">
+    <div style="padding:1rem 1.2rem;border-bottom:1px solid var(--border);
+                display:flex;justify-content:space-between;align-items:center">
+        <span style="font-weight:700;font-size:1rem">Recent Orders</span>
+        <input type="text" id="orderSearch" class="form-control"
+               style="width:200px;font-size:0.85rem"
+               placeholder="Search orders..."
+               onkeyup="searchOrders()" />
+    </div>
+    @if (Model.Count == 0)
+    {
+        <div class="text-center py-5 text-muted">No orders yet.</div>
+    }
+    else
+    {
+        <div style="overflow-x:auto">
+            <table class="table mb-0" id="ordersTable">
+                <thead>
+                    <tr>
+                        <th>Order Code</th>
+                        <th>Customer</th>
+                        <th>Phone</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var order in Model)
+                    {
+                        <tr class="order-row"
+                            data-search="@order.OrderCode.ToLower() @order.UserName.ToLower()">
+                            <td style="font-weight:700;color:var(--green-dark)">
+                                @order.OrderCode
+                            </td>
+                            <td>@order.UserName</td>
+                            <td style="color:var(--muted)">@order.UserPhone</td>
+                            <td style="font-weight:700">&#8377;@order.TotalAmount</td>
+                            <td style="color:var(--muted);font-size:0.85rem">
+                                @order.OrderDate.ToString("dd MMM, hh:mm tt")
+                            </td>
+                            <td>
+                                <span class="status-badge status-@order.Status.ToLower()">
+                                    @if (order.Status == "Pending")
+                                    {<text>&#9203; Pending</text> }
+                                else if (order.Status == "OutForDelivery")
+                                { <text>&#128757; Out for Delivery</text> }
+                            else if (order.Status == "Delivered")
+                            { <text>&#9989; Delivered</text> }
+                        else
+                        { <text>@order.Status</text>}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    <a href="/Admin/OrderDetail?orderId=@(order.OrderId)"
+                                       class="btn btn-outline-green"
+                                       style="font-size:0.8rem;padding:0.3rem 0.8rem">
+                                        <i class="bi bi-eye me-1"></i>View
+                                    </a>
+                                    @if (order.Status == "Pending")
+                                    {
+                                        <a href="/Admin/AssignDelivery?orderId=@(order.OrderId)"
+                                           class="btn btn-green"
+                                           style="font-size:0.8rem;padding:0.3rem 0.8rem">
+                                            <i class="bi bi-bicycle me-1"></i>Assign
+                                        </a>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function searchOrders() {
+            var q = document.getElementById('orderSearch').value.toLowerCase();
+            document.querySelectorAll('.order-row').forEach(function (row) {
+                row.style.display = row.dataset.search.includes(q) ? '' : 'none';
+            });
+        }
+    </script>
+}

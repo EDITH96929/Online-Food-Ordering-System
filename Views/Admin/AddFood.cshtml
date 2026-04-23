@@ -1,0 +1,90 @@
+﻿@{
+    ViewBag.Title = "Add Food";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="mb-3">
+    <a href="/Admin/ManageFood"
+       style="color:var(--green-dark);font-size:0.9rem;font-weight:600;text-decoration:none">
+        <i class="bi bi-arrow-left me-1"></i>Back to Manage Food
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card p-4">
+            <h5 style="font-weight:800;margin-bottom:1.5rem">
+                <i class="bi bi-plus-circle me-2 text-success"></i>Add New Food Item
+            </h5>
+            @using (Html.BeginForm("AddFood", "Admin", FormMethod.Post))
+            {
+                <div class="mb-3">
+                    <label class="form-label" style="font-size:0.88rem;font-weight:600">
+                        Food Name
+                    </label>
+                    <input type="text" name="FoodName" class="form-control"
+                           placeholder="e.g. Chicken Burger" required />
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-6">
+                        <label class="form-label" style="font-size:0.88rem;font-weight:600">
+                            Price (&#8377;)
+                        </label>
+                        <input type="number" name="Price" class="form-control"
+                               placeholder="0.00" step="0.01" min="0" required />
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label" style="font-size:0.88rem;font-weight:600">
+                            Category
+                        </label>
+                        <select name="Category" class="form-select">
+                            <option value="Burgers">Burgers</option>
+                            <option value="Pizza">Pizza</option>
+                            <option value="Pasta">Pasta</option>
+                            <option value="Snacks">Snacks</option>
+                            <option value="Drinks">Drinks</option>
+                            <option value="Desserts">Desserts</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Stock quantity field -->
+                <div class="mb-3">
+                    <label class="form-label" style="font-size:0.88rem;font-weight:600">
+                        Stock Quantity
+                    </label>
+                    <input type="number" name="StockQuantity" class="form-control"
+                           placeholder="e.g. 10" min="0" value="100" required />
+                    <div style="font-size:0.75rem;color:var(--muted);margin-top:3px">
+                        How many portions available — goes to 0 automatically as orders come in
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" style="font-size:0.88rem;font-weight:600">
+                        Image Filename
+                    </label>
+                    <input type="text" name="ImagePath" class="form-control"
+                           placeholder="burger.jpg" />
+                    <div style="font-size:0.75rem;color:var(--muted);margin-top:3px">
+                        Place image in Content/Images/ folder
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label" style="font-size:0.88rem;font-weight:600">
+                        Description
+                    </label>
+                    <textarea name="Description" class="form-control" rows="3"
+                              placeholder="Describe this food item..."></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-green w-100 py-2">
+                    <i class="bi bi-plus-lg me-2"></i>Add Food Item
+                </button>
+            }
+        </div>
+    </div>
+</div>

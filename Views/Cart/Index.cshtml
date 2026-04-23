@@ -1,0 +1,141 @@
+﻿@model List<FoodOrderingSystem.Models.CartItem>
+@{
+    ViewBag.Title = "My Cart";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    decimal total = Model.Sum(x => x.Total);
+}
+
+<h1 class="page-title">My Cart</h1>
+
+@if (Model.Count == 0)
+{
+    <div class="text-center py-5">
+        <div style="font-size:4rem">🛒</div>
+        <h5 class="mt-3">Your cart is empty</h5>
+        <p class="text-muted">Add some delicious items from the menu</p>
+        <a href="/Food/Menu" class="btn btn-green mt-2">Browse Menu</a>
+    </div>
+}
+else
+{
+    <div class="row g-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div style="padding:1rem 1.2rem;border-bottom:1px solid var(--border);
+                            display:flex;justify-content:space-between;align-items:center">
+                    <span style="font-weight:700">@Model.Count item(s) in cart</span>
+                    <a href="/Cart/ClearCart"
+                       style="color:#dc2626;font-size:0.85rem;font-weight:600;text-decoration:none"
+                       onclick="return confirm('Clear entire cart?')">
+                        <i class="bi bi-trash3 me-1"></i>Clear all
+                    </a>
+                </div>
+                @foreach (var item in Model)
+                {
+                    <div style="padding:1rem 1.2rem;border-bottom:1px solid var(--border);
+                                display:flex;align-items:center;gap:1rem">
+                        <img src="/Content/Images/@item.ImagePath"
+                             onerror="this.src='/Content/Images/default.jpg'"
+                             style="width:64px;height:64px;object-fit:cover;border-radius:10px" />
+                        <div style="flex:1">
+                            <div style="font-weight:700;font-size:0.95rem">@item.FoodName</div>
+                            <div style="color:var(--muted);font-size:0.85rem">&#8377;@item.Price each</div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            @using (Html.BeginForm("UpdateQuantity", "Cart", FormMethod.Post,
+                                    new { style = "display:inline" }))
+                            {
+                                <input type="hidden" name="foodId" value="@item.FoodId" />
+                                <button type="submit" name="quantity" value="@(item.Quantity - 1)"
+                                        style="width:30px;height:30px;border-radius:8px;
+                                               border:1.5px solid var(--border);background:#fff;
+                                               font-size:1.1rem;cursor:pointer;
+                                               display:flex;align-items:center;justify-content:center">
+                                    &#8722;
+                                </button>
+                                <span style="font-weight:700;min-width:24px;text-align:center">
+                                    @item.Quantity
+                                </span>
+                                <button type="submit" name="quantity" value="@(item.Quantity + 1)"
+                                        style="width:30px;height:30px;border-radius:8px;
+                                               border:1.5px solid var(--border);background:#fff;
+                                               font-size:1.1rem;cursor:pointer;
+                                               display:flex;align-items:center;justify-content:center">
+                                    +
+                                </button>
+                            }
+                        </div>
+                        <div style="font-weight:800;color:var(--green-dark);
+                                    min-width:70px;text-align:right">
+                            &#8377;@item.Total
+                        </div>
+                        <a href="/Cart/RemoveFromCart?foodId=@(item.FoodId)"
+                           style="color:#dc2626;font-size:1.1rem;
+                                  margin-left:0.5rem;text-decoration:none">
+                            <i class="bi bi-x-circle"></i>
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card p-3 mb-3">
+                <h6 style="font-weight:700;margin-bottom:1rem">
+                    <i class="bi bi-geo-alt me-2 text-success"></i>Delivery Details
+                </h6>
+                @using (Html.BeginForm("PlaceOrder", "Cart", FormMethod.Post))
+                {
+                    <div class="mb-3">
+                        <label style="font-size:0.85rem;font-weight:600;margin-bottom:4px;display:block">
+                            Phone Number
+                        </label>
+                        <input type="tel" name="customerPhone" class="form-control"
+                               placeholder="Enter your phone number"
+                               pattern="[0-9]{10}"
+                               maxlength="10"
+                               required
+                               style="font-size:0.9rem" />
+                        <div style="font-size:0.75rem;color:var(--muted);margin-top:3px">
+                            10 digit mobile number
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label style="font-size:0.85rem;font-weight:600;margin-bottom:4px;display:block">
+                            Delivery Address
+                        </label>
+                        <textarea name="deliveryAddress" class="form-control" rows="3"
+                                  placeholder="House no., Street, Area, City..."
+                                  required
+                                  style="font-size:0.9rem;resize:none"></textarea>
+                    </div>
+
+                    <hr style="border-color:var(--border)" />
+
+                    <h6 style="font-weight:700;margin-bottom:0.75rem">Order Summary</h6>
+                    foreach (var item in Model)
+                    {
+                        <div class="d-flex justify-content-between mb-1"
+                             style="font-size:0.88rem">
+                            <span style="color:var(--muted)">@item.FoodName × @item.Quantity</span>
+                            <span>&#8377;@item.Total</span>
+                        </div>
+                    }
+                    <hr style="border-color:var(--border)" />
+                    <div class="d-flex justify-content-between mb-3">
+                        <span style="font-weight:700">Total</span>
+                        <span style="font-weight:800;font-size:1.2rem;color:var(--green-dark)">
+                            &#8377;@total
+                        </span>
+                    </div>
+                    <button type="submit" class="btn btn-green w-100 py-2">
+                        <i class="bi bi-bag-check me-2"></i>Place Order — &#8377;@total
+                    </button>
+                }
+                <a href="/Food/Menu" class="btn btn-outline-green w-100 mt-2 py-2">
+                    Continue Shopping
+                </a>
+            </div>
+        </div>
+    </div>
+}

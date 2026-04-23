@@ -1,0 +1,139 @@
+﻿@model FoodOrderingSystem.Models.Order
+@{
+    ViewBag.Title = "Assign Delivery";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var deliveryBoys = ViewBag.DeliveryBoys as List<FoodOrderingSystem.Models.DeliveryBoy>;
+    bool hasDeliveryBoys = deliveryBoys != null && deliveryBoys.Count > 0;
+}
+
+<div class="mb-3">
+    <a href="/Admin/Dashboard"
+       style="color:var(--green-dark);font-size:0.9rem;font-weight:600;text-decoration:none">
+        <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card p-4">
+            <h5 style="font-weight:800;margin-bottom:0.3rem">
+                <i class="bi bi-bicycle me-2 text-success"></i>Assign Delivery
+            </h5>
+            <p style="color:var(--muted);font-size:0.88rem;margin-bottom:1.5rem">
+                Order: <strong style="color:var(--green-dark)">@Model.OrderCode</strong>
+                — Customer: <strong>@Model.UserName</strong>
+                (@Model.UserPhone)
+            </p>
+
+            @using (Html.BeginForm("AssignDelivery", "Admin", FormMethod.Post))
+            {
+                <input type="hidden" name="orderId" value="@Model.OrderId" />
+
+                <div class="mb-3">
+                    <label class="form-label" style="font-size:0.88rem;font-weight:600">
+                        Select Delivery Partner
+                    </label>
+                    @if (!hasDeliveryBoys)
+                    {
+                        <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;
+                                    color:#dc2626;font-size:0.88rem;padding:0.75rem">
+                            No delivery boys available right now.
+                        </div>
+                    }
+                    else
+                    {
+                        <select name="deliveryBoyId" class="form-select" required>
+                            <option value="">-- Select delivery partner --</option>
+                            @foreach (var boy in deliveryBoys)
+                            {
+                                <option value="@boy.DeliveryBoyId">
+                                    @boy.Name — @boy.Phone
+                                </option>
+                            }
+                        </select>
+                    }
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label" style="font-size:0.88rem;font-weight:600">
+                        Estimated Delivery Time
+                    </label>
+                    <div class="d-flex gap-2 flex-wrap" id="timeChips">
+                        <label style="cursor:pointer">
+                            <input type="radio" name="deliveryMinutes" value="5" class="time-radio" style="display:none" />
+                            <span class="time-chip">5 min</span>
+                        </label>
+                        <label style="cursor:pointer">
+                            <input type="radio" name="deliveryMinutes" value="10" class="time-radio" style="display:none" />
+                            <span class="time-chip">10 min</span>
+                        </label>
+                        <label style="cursor:pointer">
+                            <input type="radio" name="deliveryMinutes" value="15" class="time-radio" style="display:none" />
+                            <span class="time-chip">15 min</span>
+                        </label>
+                        <label style="cursor:pointer">
+                            <input type="radio" name="deliveryMinutes" value="20" class="time-radio" style="display:none" />
+                            <span class="time-chip">20 min</span>
+                        </label>
+                        <label style="cursor:pointer">
+                            <input type="radio" name="deliveryMinutes" value="30" class="time-radio" style="display:none" />
+                            <span class="time-chip">30 min</span>
+                        </label>
+                        <label style="cursor:pointer">
+                            <input type="radio" name="deliveryMinutes" value="45" class="time-radio" style="display:none" />
+                            <span class="time-chip">45 min</span>
+                        </label>
+                    </div>
+                </div>
+
+                if (hasDeliveryBoys)
+                {
+                    <button type="submit" class="btn btn-green w-100 py-2">
+                        <i class="bi bi-send me-2"></i>Assign and Notify Customer
+                    </button>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .time-chip {
+        display: inline-block;
+        padding: 0.4rem 1rem;
+        border: 1.5px solid var(--border);
+        border-radius: 99px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--muted);
+        transition: all 0.15s;
+        background: white;
+    }
+
+        .time-chip.selected {
+            background: var(--green-light);
+            border-color: var(--green);
+            color: var(--green-dark);
+        }
+</style>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('.time-radio').forEach(function (radio) {
+            radio.addEventListener('change', function () {
+                document.querySelectorAll('.time-chip').forEach(function (chip) {
+                    chip.classList.remove('selected');
+                });
+                this.nextElementSibling.classList.add('selected');
+            });
+        });
+
+        document.querySelector('form').addEventListener('submit', function (e) {
+            var selected = document.querySelector('.time-radio:checked');
+            if (!selected) {
+                e.preventDefault();
+                alert('Please select a delivery time.');
+            }
+        });
+    </script>
+}

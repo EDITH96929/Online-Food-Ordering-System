@@ -1,0 +1,165 @@
+﻿@model FoodOrderingSystem.Models.FoodItem
+@{
+    ViewBag.Title = Model.FoodName;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var ratings = ViewBag.Ratings as List<FoodOrderingSystem.Models.Rating>;
+}
+
+<div class="mb-3">
+    <a href="/Food/Menu" style="color:var(--green-dark);font-size:0.9rem;font-weight:600;text-decoration:none">
+        <i class="bi bi-arrow-left me-1"></i>Back to Menu
+    </a>
+</div>
+
+<!-- Food Info Card -->
+<div class="card p-0 overflow-hidden mb-4">
+    <div class="row g-0">
+        <div class="col-md-5">
+            <img src="/Content/Images/@Model.ImagePath"
+                 onerror="this.src='/Content/Images/default.jpg'"
+                 style="width:100%;height:360px;object-fit:cover" />
+        </div>
+        <div class="col-md-7 p-4 d-flex flex-column justify-content-center">
+            <span style="font-size:0.78rem;font-weight:600;background:var(--green-light);color:var(--green-dark);padding:3px 10px;border-radius:99px;display:inline-block;width:fit-content;margin-bottom:0.8rem">
+                @Model.Category
+            </span>
+            <h1 style="font-size:2rem;font-weight:800;margin-bottom:0.5rem">@Model.FoodName</h1>
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <div style="color:#facc15;font-size:1rem">
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        if (i <= Math.Round(Model.AverageRating))
+                        {<i class="bi bi-star-fill"></i> }
+                        else
+                        { <i class="bi bi-star" style="color:#d1d5db"></i>}
+                    }
+                </div>
+                <span style="font-size:0.88rem;color:var(--muted)">
+                    @Model.AverageRating.ToString("0.0") (@Model.TotalRatings ratings)
+                </span>
+            </div>
+            <p style="color:var(--muted);font-size:0.95rem;line-height:1.7;margin-bottom:1.5rem">
+                @Model.Description
+            </p>
+            <div style="font-size:2rem;font-weight:800;color:var(--green-dark);margin-bottom:1.5rem">
+                ₹@Model.Price
+            </div>
+            <div class="d-flex gap-3">
+                <a href="/Cart/AddToCart?foodId=@Model.FoodId" class="btn btn-green px-4 py-2">
+                    <i class="bi bi-bag-plus me-2"></i>Add to Cart
+                </a>
+                <a href="/Food/Menu" class="btn btn-outline-green px-4 py-2">
+                    View Full Menu
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reviews Section -->
+<div class="mb-3 d-flex justify-content-between align-items-center">
+    <h5 style="font-weight:800;margin:0">
+        <i class="bi bi-chat-left-text me-2 text-success"></i>
+        Customer Reviews
+        <span style="font-size:0.85rem;font-weight:500;color:var(--muted)">
+            (@(ratings != null ? ratings.Count : 0))
+        </span>
+    </h5>
+</div>
+
+@if (ratings == null || ratings.Count == 0)
+{
+    <div class="card p-4 text-center">
+        <div style="font-size:2.5rem">💬</div>
+        <p class="text-muted mt-2 mb-0">No reviews yet for this item.</p>
+        <p style="font-size:0.85rem;color:var(--muted)">Be the first to order and review!</p>
+    </div>
+}
+else
+{
+    <!-- Rating summary bar -->
+    <div class="card p-3 mb-3">
+        <div class="row align-items-center g-3">
+            <div class="col-md-3 text-center">
+                <div style="font-size:3rem;font-weight:800;color:var(--green-dark)">
+                    @Model.AverageRating.ToString("0.0")
+                </div>
+                <div style="color:#facc15;font-size:1.2rem">
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        if (i <= Math.Round(Model.AverageRating))
+                        {<i class="bi bi-star-fill"></i> }
+                        else
+                        { <i class="bi bi-star" style="color:#d1d5db"></i>}
+                    }
+                </div>
+                <div style="font-size:0.82rem;color:var(--muted)">
+                    @Model.TotalRatings review(s)
+                </div>
+            </div>
+            <div class="col-md-9">
+                @for (int star = 5; star >= 1; star--)
+                {
+                    int starVal = star;
+                    int count = ratings.Count(r => r.Stars == starVal);
+                    int pct = ratings.Count > 0 ? (count * 100 / ratings.Count) : 0;
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <span style="font-size:0.82rem;min-width:40px;color:var(--muted)">
+                            @(starVal) ★
+                        </span>
+                        <div style="flex:1;background:#f1f5f9;border-radius:99px;height:8px">
+                            <div style="width:@(pct)%;background:#facc15;border-radius:99px;height:8px"></div>
+                        </div>
+                        <span style="font-size:0.82rem;min-width:30px;text-align:right;color:var(--muted)">
+                            @count
+                        </span>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Individual reviews -->
+    <div class="d-flex flex-column gap-3">
+        @foreach (var r in ratings)
+        {
+            <div class="card p-3">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <div style="width:36px;height:36px;border-radius:50%;
+                                    background:var(--green-light);display:flex;
+                                    align-items:center;justify-content:center;
+                                    font-weight:700;color:var(--green-dark);font-size:0.9rem">
+                            @r.UserName.Substring(0, 1).ToUpper()
+                        </div>
+                        <div>
+                            <div style="font-weight:700;font-size:0.92rem">@r.UserName</div>
+                            <div style="font-size:0.75rem;color:var(--muted)">Order @r.OrderCode</div>
+                        </div>
+                    </div>
+                    <div style="font-size:0.78rem;color:var(--muted)">
+                        @r.RatedOn.ToString("dd MMM yyyy")
+                    </div>
+                </div>
+                <div style="color:#facc15;font-size:0.9rem;margin-bottom:6px">
+                    @for (int i = 1; i <= 5; i++)
+                    {
+                        if (i <= r.Stars)
+                        {<i class="bi bi-star-fill"></i> }
+                        else
+                        { <i class="bi bi-star" style="color:#d1d5db"></i>}
+                    }
+                    <span style="font-size:0.78rem;color:var(--muted);margin-left:4px">
+                        @r.Stars / 5
+                    </span>
+                </div>
+                @if (!string.IsNullOrEmpty(r.Comment))
+                {
+                    <p style="font-size:0.9rem;color:var(--text);margin:0;line-height:1.6">
+                        "@r.Comment"
+                    </p>
+                }
+            </div>
+        }
+    </div>
+}

@@ -1,0 +1,93 @@
+﻿@model FoodOrderingSystem.Models.Order
+@{
+    ViewBag.Title = "Verify OTP";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="mb-3">
+    <a href="/Delivery/MyDeliveries"
+       style="color:var(--green-dark);font-size:0.9rem;font-weight:600;text-decoration:none">
+        <i class="bi bi-arrow-left me-1"></i>Back to My Deliveries
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-5">
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert d-flex align-items-center gap-2 mb-3"
+                 style="background:#fef2f2;border:1px solid #fecaca;border-radius:12px;color:#dc2626">
+                <i class="bi bi-exclamation-circle-fill"></i> @TempData["Error"]
+            </div>
+        }
+
+        @if (Model.Status == "Delivered")
+        {
+            <div class="card p-4 text-center">
+                <div style="font-size:4rem">✅</div>
+                <h4 style="font-weight:800;margin:1rem 0 0.5rem">Delivery Complete!</h4>
+                <p class="text-muted">Order @Model.OrderCode has been delivered successfully.</p>
+                <a href="/Delivery/MyDeliveries" class="btn btn-green mt-3 px-4">
+                    Back to Deliveries
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="card p-4">
+                <div class="text-center mb-4">
+                    <div style="font-size:2.5rem">🔐</div>
+                    <h5 style="font-weight:800;margin-top:0.5rem">Enter Customer OTP</h5>
+                    <p style="font-size:0.88rem;color:var(--muted)">
+                        Ask the customer for their 4-digit delivery OTP
+                    </p>
+                    <div style="font-size:0.82rem;background:var(--surface);
+                                border-radius:8px;padding:0.5rem;margin-top:0.5rem">
+                        Order: <strong style="color:var(--green-dark)">@Model.OrderCode</strong>
+                        — Customer: <strong>@Model.UserName</strong>
+                    </div>
+                </div>
+
+                @using (Html.BeginForm("VerifyOTP", "Delivery", FormMethod.Post))
+                {
+                    <input type="hidden" name="orderId" value="@Model.OrderId" />
+                    <input type="hidden" name="otp" id="otpHidden" />
+
+                    <div class="otp-input-group mb-4">
+                        <input type="text" class="otp-digit" maxlength="1"
+                               inputmode="numeric" pattern="[0-9]" id="d1" />
+                        <input type="text" class="otp-digit" maxlength="1"
+                               inputmode="numeric" pattern="[0-9]" id="d2" />
+                        <input type="text" class="otp-digit" maxlength="1"
+                               inputmode="numeric" pattern="[0-9]" id="d3" />
+                        <input type="text" class="otp-digit" maxlength="1"
+                               inputmode="numeric" pattern="[0-9]" id="d4" />
+                    </div>
+
+                    <button type="submit" class="btn btn-green w-100 py-2"
+                            id="verifyBtn" onclick="return combineOTP()">
+                        <i class="bi bi-shield-check me-2"></i>Verify & Complete Delivery
+                    </button>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function combineOTP() {
+            var otp = document.getElementById('d1').value
+                    + document.getElementById('d2').value
+                    + document.getElementById('d3').value
+                    + document.getElementById('d4').value;
+            if (otp.length < 4) {
+                alert('Please enter all 4 digits.');
+                return false;
+            }
+            document.getElementById('otpHidden').value = otp;
+            return true;
+        }
+    </script>
+}

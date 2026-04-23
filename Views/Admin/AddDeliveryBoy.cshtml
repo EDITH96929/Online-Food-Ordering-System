@@ -1,0 +1,58 @@
+﻿@{
+    ViewBag.Title = "Add Delivery Partner";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="mb-3">
+    <a href="/Admin/ManageDelivery"
+       style="color:var(--green-dark);font-size:0.9rem;font-weight:600;text-decoration:none">
+        <i class="bi bi-arrow-left me-1"></i>Back to Delivery Partners
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card p-4">
+            <h5 style="font-weight:800;margin-bottom:1.5rem">
+                <i class="bi bi-person-plus me-2 text-success"></i>Add Delivery Partner
+            </h5>
+            @using (Html.BeginForm("AddDeliveryBoy", "Admin", FormMethod.Post))
+            {
+                <div class="mb-3">
+                    <label class="form-label" style="font-size:0.88rem;font-weight:600">
+                        Full Name
+                    </label>
+                    <input type="text" name="Name" class="form-control"
+                           placeholder="Partner full name" required />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" style="font-size:0.88rem;font-weight:600">
+                        Email Address
+                    </label>
+                    <input type="email" name="Email" class="form-control"
+                           placeholder="Login email" required />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" style="font-size:0.88rem;font-weight:600">
+                        Password
+                    </label>
+                    <input type="text" name="Password" class="form-control"
+                           placeholder="Set a login password" required />
+                    <div style="font-size:0.78rem;color:var(--muted);margin-top:4px">
+                        Partner uses this to login at delivery screen
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label" style="font-size:0.88rem;font-weight:600">
+                        Phone Number
+                    </label>
+                    <input type="tel" name="Phone" class="form-control"
+                           placeholder="10 digit mobile number" />
+                </div>
+                <button type="submit" class="btn btn-green w-100 py-2">
+                    <i class="bi bi-person-check me-2"></i>Add Partner
+                </button>
+            }
+        </div>
+    </div>
+</div>

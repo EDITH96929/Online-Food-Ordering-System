@@ -1,0 +1,485 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title — FoodRush</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet" />
+    <style>
+        :root {
+            --green:       #22c55e;
+            --green-dark:  #16a34a;
+            --green-light: #dcfce7;
+            --surface:     #f8fafc;
+            --card:        #ffffff;
+            --border:      #e2e8f0;
+            --text:        #1e293b;
+            --muted:       #64748b;
+            --radius:      14px;
+            --shadow:      0 2px 16px rgba(0,0,0,0.07);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--surface);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: #fff !important;
+            border-bottom: 1px solid var(--border);
+            padding: 0.75rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 999;
+            box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+        }
+
+        .navbar-brand {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--green-dark) !important;
+            letter-spacing: -0.5px;
+        }
+
+        .navbar-brand span { color: var(--green); }
+
+        .nav-link {
+            color: var(--muted) !important;
+            font-weight: 500;
+            font-size: 0.9rem;
+            padding: 0.4rem 0.8rem !important;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover {
+            color: var(--green-dark) !important;
+            background: var(--green-light);
+        }
+
+        .nav-link.active {
+            color: var(--green-dark) !important;
+            background: var(--green-light);
+        }
+
+        .btn-nav-logout {
+            background: #fff1f2;
+            color: #e11d48 !important;
+            border-radius: 8px;
+            font-size: 0.85rem;
+        }
+
+        .btn-nav-logout:hover {
+            background: #ffe4e6;
+            color: #be123c !important;
+        }
+
+        .cart-badge {
+            background: var(--green);
+            color: white;
+            font-size: 0.7rem;
+            padding: 1px 6px;
+            border-radius: 99px;
+            margin-left: 4px;
+            font-weight: 600;
+        }
+
+        /* Page content */
+        .page-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        .page-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 1.5rem;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        /* Buttons */
+        .btn-green {
+            background: var(--green);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            padding: 0.5rem 1.2rem;
+            transition: all 0.2s;
+        }
+
+        .btn-green:hover {
+            background: var(--green-dark);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .btn-outline-green {
+            background: transparent;
+            color: var(--green-dark);
+            border: 1.5px solid var(--green);
+            border-radius: 10px;
+            font-weight: 600;
+            padding: 0.5rem 1.2rem;
+            transition: all 0.2s;
+        }
+
+        .btn-outline-green:hover {
+            background: var(--green-light);
+            color: var(--green-dark);
+        }
+
+        /* Badge status */
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 99px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .status-pending      { background: #fef9c3; color: #854d0e; }
+        .status-outfordelivery { background: #dbeafe; color: #1e40af; }
+        .status-delivered    { background: #dcfce7; color: #166534; }
+        .status-completed    { background: #d1fae5; color: #065f46; }
+
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 9999;
+        }
+
+        .toast-msg {
+            background: var(--text);
+            color: white;
+            padding: 0.8rem 1.4rem;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideUp 0.3s ease, fadeOut 0.5s ease 2.5s forwards;
+            min-width: 260px;
+        }
+
+        .toast-msg.success { background: #16a34a; }
+        .toast-msg.error   { background: #dc2626; }
+
+        @@keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to   { transform: translateY(0);    opacity: 1; }
+        }
+
+        @@keyframes fadeOut {
+            from { opacity: 1; }
+            to   { opacity: 0; pointer-events: none; }
+        }
+
+        /* Table */
+        .table { border-collapse: separate; border-spacing: 0; }
+        .table thead th {
+            background: var(--surface);
+            color: var(--muted);
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .table tbody td {
+            padding: 0.85rem 1rem;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+            font-size: 0.92rem;
+        }
+
+        .table tbody tr:last-child td { border-bottom: none; }
+        .table tbody tr:hover { background: var(--surface); }
+
+        /* OTP box */
+        .otp-box {
+            background: var(--green-light);
+            border: 2px dashed var(--green);
+            border-radius: 14px;
+            padding: 1.2rem 2rem;
+            text-align: center;
+        }
+
+        .otp-digits {
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: 12px;
+            color: var(--green-dark);
+        }
+
+        /* Countdown */
+        .countdown-box {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 14px;
+            padding: 1rem 1.5rem;
+            text-align: center;
+        }
+
+        .countdown-timer {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #1d4ed8;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Star rating */
+        .star-rating input { display: none; }
+        .star-rating label {
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #d1d5db;
+            transition: color 0.15s;
+        }
+
+            .star-rating input:checked ~ label,
+            .star-rating label:hover,
+            .star-rating label:hover ~ label {
+                color: #facc15;
+            }
+
+        .star-rating { display: flex; flex-direction: row-reverse; gap: 4px; }
+
+        /* Form controls */
+        .form-control, .form-select {
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            padding: 0.6rem 0.9rem;
+            font-size: 0.92rem;
+            transition: border 0.2s;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--green);
+            box-shadow: 0 0 0 3px rgba(34,197,94,0.12);
+        }
+
+        /* OTP input boxes */
+        .otp-input-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .otp-digit {
+            width: 56px;
+            height: 64px;
+            text-align: center;
+            font-size: 1.6rem;
+            font-weight: 700;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            transition: border 0.2s;
+        }
+
+        .otp-digit:focus {
+            border-color: var(--green);
+            box-shadow: 0 0 0 3px rgba(34,197,94,0.12);
+            outline: none;
+        }
+
+        /* Food card */
+        .food-card {
+            border-radius: var(--radius);
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 1px solid var(--border);
+        }
+
+        .food-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+        }
+
+        .food-card-img {
+            height: 180px;
+            object-fit: cover;
+            width: 100%;
+        }
+
+        .food-card-body { padding: 1rem; }
+
+        /* Responsive */
+        @@media (max-width: 768px) {
+            .page-wrapper { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="/">🍃 Food<span>Rush</span></a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navMenu">
+                <ul class="navbar-nav ms-auto align-items-center gap-1">
+                    @if (Session["UserId"] != null)
+                    {
+                        string role = Session["UserRole"].ToString();
+
+                        if (role == "User")
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" href="/Food/Menu">
+                                    <i class="bi bi-grid me-1"></i>Menu
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/Cart/Index">
+                                    <i class="bi bi-bag me-1"></i>Cart
+                                    @{
+                                        var cart = Session["Cart"] as List<FoodOrderingSystem.Models.CartItem>;
+                                        int cartCount = cart != null ? cart.Count : 0;
+                                    }
+                                    @if (cartCount > 0)
+                                    {
+                                        <span class="cart-badge">@cartCount</span>
+                                    }
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/Cart/OrderHistory">
+                                    <i class="bi bi-clock-history me-1"></i>My Orders
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/Cart/MyReviews">
+                                    <i class="bi bi-star me-1"></i>My Reviews
+                                </a>
+                            </li>
+                        }
+                        else if (role == "Admin")
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" href="/Admin/Dashboard">
+                                    <i class="bi bi-speedometer2 me-1"></i>Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/Admin/ManageFood">
+                                    <i class="bi bi-egg-fried me-1"></i>Manage Food
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/Admin/ManageDelivery">
+                                    <i class="bi bi-bicycle me-1"></i>Delivery Partners
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/Admin/FoodReviews">
+                                    <i class="bi bi-star me-1"></i>Food Reviews
+                                </a>
+                            </li>
+                        }
+
+                        else if (role == "Delivery")
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" href="/Delivery/MyDeliveries">
+                                    <i class="bi bi-bicycle me-1"></i>My Deliveries
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/Delivery/DeliveryHistory">
+                                    <i class="bi bi-clock-history me-1"></i>History
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/Delivery/MyReviews">
+                                    <i class="bi bi-star me-1"></i>My Reviews
+                                </a>
+                            </li>
+                        }
+
+                        <li class="nav-item ms-2">
+                            <span class="nav-link" style="font-size:0.85rem;color:var(--muted)">
+                                <i class="bi bi-person-circle me-1"></i>@Session["UserName"]
+                            </span>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link btn-nav-logout" href="/Account/Logout">
+                                <i class="bi bi-box-arrow-right me-1"></i>Logout
+                            </a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" href="/Account/Login">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-green ms-2" href="/Account/Register">Register</a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Toast notification -->
+    @if (TempData["Toast"] != null)
+    {
+        string toastClass = TempData["Error"] != null ? "error" : "success";
+        <div class="toast-container">
+            <div class="toast-msg @toastClass">
+                <i class="bi @(toastClass == "success" ? "bi-check-circle-fill" : "bi-x-circle-fill")"></i>
+                @TempData["Toast"]
+            </div>
+        </div>
+    }
+
+    <div class="page-wrapper">
+        @RenderBody()
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Auto remove toast after 3s
+        setTimeout(function () {
+            var t = document.querySelector('.toast-msg');
+            if (t) t.remove();
+        }, 3000);
+
+        // OTP digit auto-jump
+        document.querySelectorAll('.otp-digit').forEach(function (el, i, arr) {
+            el.addEventListener('input', function () {
+                if (this.value.length === 1 && i < arr.length - 1)
+                    arr[i + 1].focus();
+            });
+            el.addEventListener('keydown', function (e) {
+                if (e.key === 'Backspace' && !this.value && i > 0)
+                    arr[i - 1].focus();
+            });
+        });
+    </script>
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

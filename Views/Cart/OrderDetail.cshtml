@@ -1,0 +1,662 @@
+﻿@model FoodOrderingSystem.Models.Order
+@{
+    ViewBag.Title = "Order Detail";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var details = ViewBag.Details as List<FoodOrderingSystem.Models.OrderDetail>;
+    bool hasRatedFood = ViewBag.HasRatedFood != null ? (bool)ViewBag.HasRatedFood : false;
+    bool hasRatedDelivery = ViewBag.HasRatedDelivery != null ? (bool)ViewBag.HasRatedDelivery : false;
+}
+
+<style>
+    .detail-card {
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid var(--border);
+        background: var(--card);
+        margin-bottom: 1rem;
+    }
+    .detail-header {
+        padding: 14px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .hdr-pending     { background: #78350f; }
+    .hdr-delivery    { background: #1e3a5f; }
+    .hdr-delivered   { background: #14532d; }
+
+    /* Map styles */
+    .map-container {
+        position: relative;
+        background: #e8f4e8;
+        border-radius: 14px;
+        overflow: hidden;
+        height: 200px;
+        margin-bottom: 14px;
+        border: 1px solid #86efac;
+    }
+    .map-road {
+        position: absolute;
+        background: #fff;
+        border-radius: 4px;
+    }
+    .map-label {
+        position: absolute;
+        font-size: 0.65rem;
+        font-weight: 700;
+        background: #fff;
+        padding: 3px 8px;
+        border-radius: 99px;
+        border: 1px solid var(--border);
+        white-space: nowrap;
+        color: #1e293b;
+    }
+    .map-pin {
+        position: absolute;
+        width: 28px;
+        height: 28px;
+        border-radius: 50% 50% 50% 0;
+        transform: rotate(-45deg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .map-pin-inner {
+        width: 12px;
+        height: 12px;
+        background: white;
+        border-radius: 50%;
+        transform: rotate(45deg);
+    }
+    .scooter-icon {
+        position: absolute;
+        font-size: 1.4rem;
+        transition: left 0.05s linear, top 0.05s linear;
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+        z-index: 10;
+    }
+    .map-pulse {
+        position: absolute;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(34,197,94,0.2);
+        animation: pulse 2s infinite;
+        transform: translate(-50%, -50%);
+    }
+    keyframes pulse {
+        0%   { transform: translate(-50%,-50%) scale(0.8); opacity:1; }
+        100% { transform: translate(-50%,-50%) scale(2);   opacity:0; }
+    }
+    .live-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #dc2626;
+        color: #fff;
+        font-size: 0.65rem;
+        font-weight: 700;
+        padding: 3px 8px;
+        border-radius: 99px;
+        letter-spacing: 0.5px;
+        animation: blink 1.2s infinite;
+    }
+    keyframes blink {
+        0%,100% { opacity:1; }
+        50%      { opacity:0.4; }
+    }
+    .progress-track {
+        background: #e2e8f0;
+        border-radius: 99px;
+        height: 6px;
+        margin: 8px 0 4px;
+        overflow: hidden;
+    }
+    .progress-fill {
+        height: 6px;
+        background: linear-gradient(90deg, #22c55e, #16a34a);
+        border-radius: 99px;
+        transition: width 1s linear;
+    }
+    .step-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--border);
+        font-size: 0.88rem;
+    }
+    .step-row:last-child { border-bottom: none; }
+    .step-dot {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 0.85rem;
+    }
+</style>
+
+<div class="mb-3">
+    <a href="/Cart/OrderHistory"
+       style="color:var(--green-dark);font-size:0.9rem;font-weight:600;text-decoration:none">
+        <i class="bi bi-arrow-left me-1"></i>Back to Orders
+    </a>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-7">
+
+        <!-- Order header card -->
+        @{
+            string hdrClass = Model.Status == "Pending" ? "hdr-pending"
+                            : Model.Status == "OutForDelivery" ? "hdr-delivery"
+                            : "hdr-delivered";
+        }
+        <div class="detail-card mb-3">
+            <div class="detail-header @hdrClass">
+                <div>
+                    <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.8px;
+                                color:rgba(255,255,255,0.6);margin-bottom:3px">ORDER</div>
+                    <div style="font-size:1.1rem;font-weight:800;color:#fff">
+                        @Model.OrderCode
+                    </div>
+                    <div style="font-size:0.75rem;color:rgba(255,255,255,0.65);margin-top:2px">
+                        @Model.OrderDate.ToString("dd MMM yyyy, hh:mm tt")
+                    </div>
+                </div>
+                <div style="text-align:right">
+                    <div style="background:rgba(255,255,255,0.18);color:#fff;
+                                font-size:0.75rem;font-weight:700;
+                                padding:5px 14px;border-radius:99px">
+                        @if (Model.Status == "Pending")
+                        {<text>⏳ Preparing</text>}
+                    else if (Model.Status == "OutForDelivery")
+                    {<text>🛵 Out for Delivery</text>}
+                else
+                {<text>✅ Delivered</text>}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Items table -->
+            <div style="padding:16px 20px">
+                <table class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Price</th>
+                            <th>Qty</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var d in details)
+                        {
+                            <tr>
+                                <td>
+                                    <a href="/Food/Detail?foodId=@(d.FoodId)"
+                                       style="color:var(--green-dark);font-weight:600;
+                                              text-decoration:none">
+                                        @d.FoodName
+                                    </a>
+                                </td>
+                                <td>&#8377;@d.Price</td>
+                                <td>@d.Quantity</td>
+                                <td style="font-weight:700">&#8377;@d.ItemTotal</td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3"
+                                style="font-weight:700;text-align:right;
+                                       border-top:2px solid var(--border)">
+                                Grand Total
+                            </td>
+                            <td style="font-weight:800;color:var(--green-dark);
+                                       border-top:2px solid var(--border);
+                                       font-size:1.05rem">
+                                &#8377;@Model.TotalAmount
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <!-- Delivery partner card -->
+        @if (!string.IsNullOrEmpty(Model.DeliveryBoyName))
+        {
+            <div class="detail-card p-3">
+                <div style="display:flex;align-items:center;gap:12px">
+                    <div style="width:44px;height:44px;border-radius:50%;
+                                background:#dcfce7;display:flex;align-items:center;
+                                justify-content:center;font-weight:800;
+                                color:#166534;font-size:1.1rem;flex-shrink:0">
+                        @Model.DeliveryBoyName.Substring(0, 1).ToUpper()
+                    </div>
+                    <div style="flex:1">
+                        <div style="font-size:0.7rem;color:var(--muted);
+                                    font-weight:700;letter-spacing:0.5px">
+                            DELIVERY PARTNER
+                        </div>
+                        <div style="font-weight:700;font-size:0.95rem">
+                            @Model.DeliveryBoyName
+                        </div>
+                    </div>
+                    @if (Model.Status == "OutForDelivery")
+                    {
+                        <span style="background:#dcfce7;color:#166534;
+                                     font-size:0.75rem;font-weight:700;
+                                     padding:4px 12px;border-radius:99px">
+                            On the way
+                        </span>
+                    }
+                    else if (Model.Status == "Delivered")
+                    {
+                        <span style="background:#dcfce7;color:#166534;
+                                     font-size:0.75rem;font-weight:700;
+                                     padding:4px 12px;border-radius:99px">
+                            Delivered
+                        </span>
+                    }
+                </div>
+            </div>
+        }
+
+        <!-- Delivery address card -->
+        @if (!string.IsNullOrEmpty(Model.DeliveryAddress))
+        {
+            <div class="detail-card p-3 mt-3">
+                <div style="display:flex;gap:12px;align-items:flex-start">
+                    <div style="width:36px;height:36px;border-radius:50%;
+                                background:#dcfce7;display:flex;align-items:center;
+                                justify-content:center;flex-shrink:0">
+                        <i class="bi bi-geo-alt-fill" style="color:#166534"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:0.7rem;color:var(--muted);
+                                    font-weight:700;letter-spacing:0.5px;margin-bottom:3px">
+                            DELIVERY ADDRESS
+                        </div>
+                        <div style="font-weight:600;font-size:0.92rem;line-height:1.5">
+                            @Model.DeliveryAddress
+                        </div>
+                        @if (!string.IsNullOrEmpty(Model.CustomerPhone))
+                        {
+                            <div style="font-size:0.82rem;color:var(--muted);margin-top:4px">
+                                <i class="bi bi-telephone-fill me-1"
+                                   style="color:#22c55e"></i>
+                                @Model.CustomerPhone
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="col-md-5">
+
+        <!-- LIVE DELIVERY MAP — only when OutForDelivery -->
+        @if (Model.Status == "OutForDelivery")
+        {
+            int secLeft = 0;
+            if (Model.DeliveryStartTime.HasValue && Model.DeliveryTime.HasValue)
+            {
+                double elapsed = (DateTime.Now - Model.DeliveryStartTime.Value).TotalSeconds;
+                double total = Model.DeliveryTime.Value * 60;
+                double left = total - elapsed;
+                secLeft = left > 0 ? (int)left : 0;
+            }
+
+            int totalSec = Model.DeliveryTime.HasValue
+                           ? Model.DeliveryTime.Value * 60 : 1200;
+            int elapsed2 = totalSec - secLeft;
+            int progressPct = Math.Min(100, (int)((double)elapsed2 / totalSec * 100));
+
+            <div class="detail-card p-3 mb-3">
+                <div style="display:flex;justify-content:space-between;
+                            align-items:center;margin-bottom:10px">
+                    <div style="font-weight:700;font-size:0.92rem">
+                        <i class="bi bi-map me-2 text-success"></i>
+                        Live Delivery Tracking
+                    </div>
+                    <span class="live-badge">LIVE</span>
+                </div>
+
+                <!-- Animated map -->
+                <div class="map-container" id="deliveryMap">
+
+                    <!-- Road grid -->
+                    <div class="map-road"
+                         style="left:0;right:0;top:50%;height:10px;
+                                background:#d1d5db;transform:translateY(-50%)"></div>
+                    <div class="map-road"
+                         style="top:0;bottom:0;left:30%;width:10px;
+                                background:#d1d5db"></div>
+                    <div class="map-road"
+                         style="top:0;bottom:0;left:70%;width:10px;
+                                background:#d1d5db"></div>
+                    <div class="map-road"
+                         style="left:0;right:0;top:25%;height:6px;
+                                background:#e5e7eb"></div>
+                    <div class="map-road"
+                         style="left:0;right:0;top:75%;height:6px;
+                                background:#e5e7eb"></div>
+
+                    <!-- Green delivery route line -->
+                    <svg style="position:absolute;top:0;left:0;width:100%;
+                                height:100%;pointer-events:none">
+                        <polyline id="routeLine"
+                                  points="40,170 40,100 280,100 280,30"
+                                  fill="none" stroke="#22c55e"
+                                  stroke-width="3"
+                                  stroke-dasharray="6 4"
+                                  stroke-linecap="round" />
+                    </svg>
+
+                    <!-- Restaurant pin -->
+                    <div style="position:absolute;left:24px;top:142px">
+                        <div class="map-pulse"
+                             style="top:14px;left:14px"></div>
+                        <div class="map-pin"
+                             style="background:#f59e0b;width:28px;height:28px">
+                            <div class="map-pin-inner"></div>
+                        </div>
+                    </div>
+                    <div class="map-label" style="left:4px;top:178px">
+                        Restaurant
+                    </div>
+
+                    <!-- Customer pin -->
+                    <div style="position:absolute;left:266px;top:10px">
+                        <div class="map-pin"
+                             style="background:#22c55e;width:28px;height:28px">
+                            <div class="map-pin-inner"></div>
+                        </div>
+                    </div>
+                    <div class="map-label" style="right:4px;top:44px">
+                        Your location
+                    </div>
+
+                    <!-- Scooter that moves -->
+                    <div class="scooter-icon" id="scooter"
+                         style="left:28px;top:152px">
+                        🛵
+                    </div>
+
+                    <!-- Live badge -->
+                    <span class="live-badge">● LIVE</span>
+                </div>
+
+                <!-- Progress bar -->
+                <div style="display:flex;justify-content:space-between;
+                            font-size:0.72rem;color:var(--muted);margin-bottom:3px">
+                    <span>Restaurant</span>
+                    <span>Your location</span>
+                </div>
+                <div class="progress-track">
+                    <div class="progress-fill" id="progressFill"
+                         style="width:@(progressPct)%"></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;
+                            font-size:0.72rem;color:var(--muted);margin-top:3px">
+                    <span>Started</span>
+                    <span id="progressLabel">@progressPct% of route covered</span>
+                </div>
+
+                <!-- Timer -->
+                <div style="text-align:center;margin-top:12px;
+                            background:#eff6ff;border-radius:12px;padding:12px">
+                    <div style="font-size:0.72rem;color:#1d4ed8;font-weight:700;
+                                letter-spacing:0.5px;margin-bottom:4px">
+                        ESTIMATED ARRIVAL
+                    </div>
+                    <div style="font-size:2rem;font-weight:800;color:#1d4ed8;
+                                font-variant-numeric:tabular-nums"
+                         id="mapTimer">--:--</div>
+                </div>
+            </div>
+
+            <!-- OTP card -->
+            <div class="detail-card p-3 mb-3">
+                <div style="text-align:center">
+                    <div style="font-size:0.75rem;font-weight:700;
+                                color:var(--green-dark);letter-spacing:0.5px;
+                                margin-bottom:8px">
+                        YOUR DELIVERY OTP
+                    </div>
+                    <div style="font-size:0.82rem;color:var(--muted);
+                                margin-bottom:10px">
+                        Share only with your delivery partner at the door
+                    </div>
+                    <div style="background:var(--green-light);
+                                border:2px dashed var(--green);
+                                border-radius:14px;padding:16px">
+                        <div style="font-size:2.8rem;font-weight:800;
+                                    letter-spacing:16px;color:var(--green-dark)">
+                            @Model.OTP
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                // Scooter animation along route
+                // Route: (40,170) → (40,100) → (280,100) → (280,30)
+                var waypoints = [
+                    { x: 40,  y: 170 },
+                    { x: 40,  y: 100 },
+                    { x: 280, y: 100 },
+                    { x: 280, y: 30  }
+                ];
+
+                var totalSec  = @(totalSec);
+                var secLeft   = @(secLeft);
+                var elapsed   = totalSec - secLeft;
+                var progress  = Math.min(1, elapsed / totalSec);
+
+                // Calculate total path length
+                var segLengths = [];
+                var totalLen = 0;
+                for (var i = 0; i < waypoints.length - 1; i++) {
+                    var dx = waypoints[i+1].x - waypoints[i].x;
+                    var dy = waypoints[i+1].y - waypoints[i].y;
+                    var len = Math.sqrt(dx*dx + dy*dy);
+                    segLengths.push(len);
+                    totalLen += len;
+                }
+
+                function getPosAtProgress(p) {
+                    var target = p * totalLen;
+                    var covered = 0;
+                    for (var i = 0; i < segLengths.length; i++) {
+                        if (covered + segLengths[i] >= target) {
+                            var t = (target - covered) / segLengths[i];
+                            return {
+                                x: waypoints[i].x + t * (waypoints[i+1].x - waypoints[i].x),
+                                y: waypoints[i].y + t * (waypoints[i+1].y - waypoints[i].y)
+                            };
+                        }
+                        covered += segLengths[i];
+                    }
+                    return waypoints[waypoints.length - 1];
+                }
+
+                var scooter = document.getElementById('scooter');
+                var fill    = document.getElementById('progressFill');
+                var label   = document.getElementById('progressLabel');
+                var timer   = document.getElementById('mapTimer');
+                var s       = secLeft;
+
+                function animate() {
+                    var pos = getPosAtProgress(progress);
+                    scooter.style.left = (pos.x - 12) + 'px';
+                    scooter.style.top  = (pos.y - 18) + 'px';
+
+                    var pct = Math.min(100, Math.round(progress * 100));
+                    fill.style.width = pct + '%';
+                    label.textContent = pct + '% of route covered';
+
+                    // countdown
+                    if (s <= 0) {
+                        timer.textContent = 'Arriving now!';
+                        timer.style.color = '#16a34a';
+                        timer.style.fontSize = '1.3rem';
+                        scooter.style.left = '268px';
+                        scooter.style.top  = '12px';
+                        progress = 1;
+                        fill.style.width = '100%';
+                        return;
+                    }
+                    var m   = Math.floor(s / 60);
+                    var sec = s % 60;
+                    timer.textContent = (m < 10 ? '0' : '') + m + ':'
+                                      + (sec < 10 ? '0' : '') + sec;
+
+                    s--;
+                    progress = Math.min(1, (totalSec - s) / totalSec);
+                    setTimeout(animate, 1000);
+                }
+                animate();
+            </script>
+        }
+
+        <!-- Food Rating — only when Delivered -->
+        @if (Model.Status == "Delivered")
+        {
+            <div class="detail-card p-3 mb-3">
+                <h6 style="font-weight:700;margin-bottom:1rem">
+                    🍔 Rate the Food
+                </h6>
+                @if (hasRatedFood)
+                {
+                    <div class="text-center py-3">
+                        <div style="font-size:2rem">⭐</div>
+                        <div style="font-weight:600;font-size:0.9rem;
+                                    color:var(--green-dark);margin-top:6px">
+                            Food rated! Thank you.
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    using (Html.BeginForm("RateOrder", "Cart", FormMethod.Post))
+                    {
+                        <input type="hidden" name="orderId" value="@Model.OrderId" />
+                        <input type="hidden" name="ratingType" value="Food" />
+                        <input type="hidden" name="deliveryBoyId" value="" />
+                        <div class="star-rating mb-3">
+                            <input type="radio" name="stars" id="fs5" value="5" />
+                            <label for="fs5"><i class="bi bi-star-fill"></i></label>
+                            <input type="radio" name="stars" id="fs4" value="4" />
+                            <label for="fs4"><i class="bi bi-star-fill"></i></label>
+                            <input type="radio" name="stars" id="fs3" value="3" />
+                            <label for="fs3"><i class="bi bi-star-fill"></i></label>
+                            <input type="radio" name="stars" id="fs2" value="2" />
+                            <label for="fs2"><i class="bi bi-star-fill"></i></label>
+                            <input type="radio" name="stars" id="fs1" value="1" />
+                            <label for="fs1"><i class="bi bi-star-fill"></i></label>
+                        </div>
+                        <textarea name="comment" class="form-control mb-3"
+                                  rows="2"
+                                  placeholder="How was the food quality?"></textarea>
+                        <button type="submit" class="btn btn-green w-100">
+                            Submit Food Rating
+                            <i class="bi bi-send ms-1"></i>
+                        </button>
+                    }
+                }
+            </div>
+
+            if (Model.DeliveryBoyId.HasValue)
+            {
+                <div class="detail-card p-3 mb-3">
+                    <h6 style="font-weight:700;margin-bottom:1rem">
+                        🛵 Rate the Delivery
+                    </h6>
+                    @if (hasRatedDelivery)
+                    {
+                        <div class="text-center py-3">
+                            <div style="font-size:2rem">⭐</div>
+                            <div style="font-weight:600;font-size:0.9rem;
+                                        color:var(--green-dark);margin-top:6px">
+                                Delivery rated! Thank you.
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        using (Html.BeginForm("RateOrder", "Cart", FormMethod.Post))
+                        {
+                            <input type="hidden" name="orderId"
+                                   value="@Model.OrderId" />
+                            <input type="hidden" name="ratingType"
+                                   value="Delivery" />
+                            <input type="hidden" name="deliveryBoyId"
+                                   value="@(Model.DeliveryBoyId.Value)" />
+                            <div class="star-rating mb-3">
+                                <input type="radio" name="stars" id="ds5" value="5" />
+                                <label for="ds5"><i class="bi bi-star-fill"></i></label>
+                                <input type="radio" name="stars" id="ds4" value="4" />
+                                <label for="ds4"><i class="bi bi-star-fill"></i></label>
+                                <input type="radio" name="stars" id="ds3" value="3" />
+                                <label for="ds3"><i class="bi bi-star-fill"></i></label>
+                                <input type="radio" name="stars" id="ds2" value="2" />
+                                <label for="ds2"><i class="bi bi-star-fill"></i></label>
+                                <input type="radio" name="stars" id="ds1" value="1" />
+                                <label for="ds1"><i class="bi bi-star-fill"></i></label>
+                            </div>
+                            <textarea name="comment" class="form-control mb-3"
+                                      rows="2"
+                                      placeholder="How was the delivery experience?">
+                            </textarea>
+                            <button type="submit" class="btn btn-green w-100">
+                                Submit Delivery Rating
+                                <i class="bi bi-send ms-1"></i>
+                            </button>
+                        }
+                    }
+                </div>
+            }
+
+            if (hasRatedFood && (!Model.DeliveryBoyId.HasValue || hasRatedDelivery))
+            {
+                <div class="detail-card p-3 text-center"
+                     style="background:#f0fdf4;border-color:#86efac">
+                    <div style="font-size:2rem">🎉</div>
+                    <div style="font-weight:700;color:#166534;margin-top:6px">
+                        Thanks for your feedback!
+                    </div>
+                    <div style="font-size:0.85rem;color:#166534;margin-top:4px">
+                        Your review helps us serve you better.
+                    </div>
+                </div>
+            }
+        }
+
+        <!-- Pending status -->
+        @if (Model.Status == "Pending")
+        {
+            <div class="detail-card p-4 text-center">
+                <div style="width:64px;height:64px;border-radius:50%;
+                            background:#fef9c3;display:flex;align-items:center;
+                            justify-content:center;font-size:1.8rem;
+                            margin:0 auto 1rem">
+                    ⏳
+                </div>
+                <div style="font-weight:700;font-size:1rem;margin-bottom:6px">
+                    Preparing your order
+                </div>
+                <div style="font-size:0.85rem;color:var(--muted)">
+                    Our kitchen is working on it. A delivery partner
+                    will be assigned shortly.
+                </div>
+            </div>
+        }
+    </div>
+</div>

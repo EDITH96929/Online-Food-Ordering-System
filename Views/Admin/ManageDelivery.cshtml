@@ -1,0 +1,113 @@
+﻿@model List<FoodOrderingSystem.Models.DeliveryBoy>
+@{
+    ViewBag.Title = "Delivery Partners";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="page-title mb-0">Delivery Partners</h1>
+    <a href="/Admin/AddDeliveryBoy" class="btn btn-green">
+        <i class="bi bi-plus-lg me-1"></i>Add New Partner
+    </a>
+</div>
+
+@if (Model.Count == 0)
+{
+    <div class="text-center py-5">
+        <div style="font-size:3rem">🛵</div>
+        <h5 class="mt-3">No delivery partners yet</h5>
+        <a href="/Admin/AddDeliveryBoy" class="btn btn-green mt-2">Add First Partner</a>
+    </div>
+}
+else
+{
+    <div class="card">
+        <div style="overflow-x:auto">
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th>Partner</th>
+                        <th>Phone</th>
+                        <th>Rating</th>
+                        <th>Deliveries</th>
+                        <th>Joined</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var boy in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div style="width:36px;height:36px;border-radius:50%;
+                                                background:var(--green-light);display:flex;
+                                                align-items:center;justify-content:center;
+                                                font-weight:700;color:var(--green-dark)">
+                                        @boy.Name.Substring(0, 1).ToUpper()
+                                    </div>
+                                    <div>
+                                        <div style="font-weight:700;font-size:0.92rem">
+                                            @boy.Name
+                                        </div>
+                                        <div style="font-size:0.78rem;color:var(--muted)">
+                                            @boy.Email
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="color:var(--muted)">@boy.Phone</td>
+                            <td>
+                                <span style="color:#facc15">★</span>
+                                @boy.AverageRating.ToString("0.0")
+                            </td>
+                            <td style="font-weight:600">@boy.TotalDeliveries</td>
+                            <td style="font-size:0.85rem;color:var(--muted)">
+                                @boy.JoinedOn.ToString("dd MMM yyyy")
+                            </td>
+                            <td>
+                                @if (boy.IsAvailable)
+                                {
+                                    <span class="status-badge status-delivered">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="status-badge status-pending">Inactive</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    <a href="/Admin/DeliveryBoyDetail?id=@boy.DeliveryBoyId"
+                                       class="btn btn-outline-green"
+                                       style="font-size:0.8rem;padding:0.3rem 0.8rem">
+                                        <i class="bi bi-eye me-1"></i>View
+                                    </a>
+                                    @if (boy.IsAvailable)
+                                    {
+                                        <a href="/Admin/ToggleDeliveryBoy?id=@(boy.DeliveryBoyId)&activate=false"
+                                           class="btn"
+                                           style="font-size:0.8rem;padding:0.3rem 0.8rem;
+                                                  background:#fff1f2;color:#e11d48;
+                                                  border:1px solid #fecdd3"
+                                           onclick="return confirm('Deactivate this partner?')">
+                                            Deactivate
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <a href="/Admin/ToggleDeliveryBoy?id=@(boy.DeliveryBoyId)&activate=true"
+                                           class="btn btn-green"
+                                           style="font-size:0.8rem;padding:0.3rem 0.8rem">
+                                            Activate
+                                        </a>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

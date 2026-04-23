@@ -1,0 +1,101 @@
+﻿@model FoodOrderingSystem.Models.FoodItem
+@{
+    ViewBag.Title = "Edit Food";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="mb-3">
+    <a href="/Admin/ManageFood"
+       style="color:var(--green-dark);font-size:0.9rem;font-weight:600;text-decoration:none">
+        <i class="bi bi-arrow-left me-1"></i>Back to Manage Food
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card p-4">
+            <h5 style="font-weight:800;margin-bottom:1.5rem">
+                <i class="bi bi-pencil me-2 text-success"></i>Edit Food Item
+            </h5>
+            @using (Html.BeginForm("EditFood", "Admin", FormMethod.Post))
+            {
+                <input type="hidden" name="FoodId" value="@Model.FoodId" />
+
+                <div class="mb-3">
+                    <label class="form-label" style="font-size:0.88rem;font-weight:600">
+                        Food Name
+                    </label>
+                    <input type="text" name="FoodName" class="form-control"
+                           value="@Model.FoodName" required />
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-6">
+                        <label class="form-label" style="font-size:0.88rem;font-weight:600">
+                            Price (&#8377;)
+                        </label>
+                        <input type="number" name="Price" class="form-control"
+                               value="@Model.Price" step="0.01" min="0" required />
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label" style="font-size:0.88rem;font-weight:600">
+                            Category
+                        </label>
+                        <select name="Category" class="form-select">
+                            @foreach (var cat in new[] { "Burgers","Pizza","Pasta",
+                                                          "Snacks","Drinks","Desserts","Other" })
+                            {
+                                <option value="@cat" @(Model.Category == cat ? "selected" : "")>
+                                    @cat
+                                </option>
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Stock quantity field with current value -->
+                <div class="mb-3">
+                    <label class="form-label" style="font-size:0.88rem;font-weight:600">
+                        Stock Quantity
+                    </label>
+                    <input type="number" name="StockQuantity" class="form-control"
+                           value="@Model.StockQuantity" min="0" required />
+                    <div style="font-size:0.75rem;margin-top:3px">
+                        @if (Model.IsOutOfStock)
+                        {
+                            <span style="color:#dc2626;font-weight:600">
+                                &#9888; Currently out of stock — set a quantity to restock
+                            </span>
+                        }
+                        else
+                        {
+                            <span style="color:var(--muted)">
+                                Current stock: @Model.StockQuantity portions remaining
+                            </span>
+                        }
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" style="font-size:0.88rem;font-weight:600">
+                        Image Filename
+                    </label>
+                    <input type="text" name="ImagePath" class="form-control"
+                           value="@Model.ImagePath" />
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label" style="font-size:0.88rem;font-weight:600">
+                        Description
+                    </label>
+                    <textarea name="Description" class="form-control"
+                              rows="3">@Model.Description</textarea>
+                </div>
+
+                <button type="submit" class="btn btn-green w-100 py-2">
+                    <i class="bi bi-check-lg me-2"></i>Update Food Item
+                </button>
+            }
+        </div>
+    </div>
+</div>

@@ -1,0 +1,68 @@
+﻿@{
+    ViewBag.Title = "Login";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="row justify-content-center align-items-center" style="min-height:75vh">
+    <div class="col-md-4">
+        <div class="text-center mb-4">
+            <div style="font-size:2.5rem">🍃</div>
+            <h1 style="font-size:1.8rem;font-weight:800">Welcome back</h1>
+            <p class="text-muted" style="font-size:0.9rem">Sign in to your FoodRush account</p>
+        </div>
+        <div class="card p-4">
+            @if (ViewBag.Error != null)
+            {
+                <div class="alert d-flex align-items-center gap-2"
+                     style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;color:#dc2626;font-size:0.88rem">
+                    <i class="bi bi-exclamation-circle-fill"></i> @ViewBag.Error
+                </div>
+            }
+            @if (ViewBag.Success != null)
+            {
+                <div class="alert d-flex align-items-center gap-2"
+                     style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;color:#16a34a;font-size:0.88rem">
+                    <i class="bi bi-check-circle-fill"></i> @ViewBag.Success
+                </div>
+            }
+            @using (Html.BeginForm("Login", "Account", FormMethod.Post))
+            {
+                <div class="mb-3">
+                    <label class="form-label fw-600" style="font-size:0.88rem;font-weight:600">Email address</label>
+                    <div class="input-group">
+                        <span class="input-group-text" style="border-radius:10px 0 0 10px;border:1.5px solid var(--border);background:#f8fafc">
+                            <i class="bi bi-envelope text-muted"></i>
+                        </span>
+                        <input type="email" name="email" class="form-control"
+                               style="border-radius:0 10px 10px 0"
+                               placeholder="you@example.com" required />
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label" style="font-size:0.88rem;font-weight:600">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text" style="border-radius:10px 0 0 10px;border:1.5px solid var(--border);background:#f8fafc">
+                            <i class="bi bi-lock text-muted"></i>
+                        </span>
+                        <input type="password" name="password" class="form-control"
+                               style="border-radius:0 10px 10px 0"
+                               placeholder="Enter password" required />
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-green w-100 py-2" style="font-size:1rem">
+                    Sign in <i class="bi bi-arrow-right ms-1"></i>
+                </button>
+            }
+            <div class="text-center mt-3" style="font-size:0.88rem;color:var(--muted)">
+                Don't have an account?
+                <a href="/Account/Register" style="color:var(--green-dark);font-weight:600">Register free</a>
+            </div>
+            <hr style="margin:1rem 0;border-color:var(--border)" />
+            <div style="background:var(--surface);border-radius:10px;padding:0.8rem;font-size:0.8rem;color:var(--muted)">
+                <div class="fw-600 mb-1" style="color:var(--text)">Demo credentials</div>
+                <div>Admin: admin@food.com / admin123</div>
+                <div>Delivery: delivery@food.com / delivery123</div>
+            </div>
+        </div>
+    </div>
+</div>

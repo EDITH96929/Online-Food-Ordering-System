@@ -1,0 +1,327 @@
+﻿@model List<FoodOrderingSystem.Models.Order>
+@{
+    ViewBag.Title = "My Deliveries";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .del-card {
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid var(--border);
+        margin-bottom: 1rem;
+        background: var(--card);
+    }
+
+    .del-header {
+        padding: 14px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .del-header-green {
+        background: #0F6E56;
+    }
+
+    .del-header-red {
+        background: #A32D2D;
+    }
+
+    .del-body {
+        padding: 18px 20px;
+    }
+
+    .del-info-box {
+        flex: 1;
+        background: var(--surface);
+        border-radius: 12px;
+        padding: 12px 14px;
+        border: 1px solid var(--border);
+    }
+
+    .del-label {
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.8px;
+        color: var(--muted);
+        margin-bottom: 6px;
+    }
+
+    .timer-box-green {
+        flex: 1;
+        background: #f0fdf4;
+        border: 1px solid #86efac;
+        border-radius: 12px;
+        padding: 12px 14px;
+        text-align: center;
+    }
+
+    .timer-box-red {
+        flex: 1;
+        background: #fef2f2;
+        border: 1px solid #fca5a5;
+        border-radius: 12px;
+        padding: 12px 14px;
+        text-align: center;
+    }
+
+    .amount-pill {
+        display: inline-block;
+        background: #dcfce7;
+        color: #166534;
+        font-size: 0.78rem;
+        font-weight: 700;
+        padding: 3px 10px;
+        border-radius: 99px;
+        margin-top: 6px;
+    }
+
+    .del-btn-green {
+        display: block;
+        width: 100%;
+        background: #22c55e;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 13px;
+        font-size: 0.92rem;
+        font-weight: 700;
+        cursor: pointer;
+        text-align: center;
+        text-decoration: none;
+        transition: background 0.2s;
+    }
+
+        .del-btn-green:hover {
+            background: #16a34a;
+            color: white;
+        }
+
+    .del-btn-red {
+        display: block;
+        width: 100%;
+        background: #dc2626;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        padding: 13px;
+        font-size: 0.92rem;
+        font-weight: 700;
+        cursor: pointer;
+        text-align: center;
+        text-decoration: none;
+        transition: background 0.2s;
+    }
+
+        .del-btn-red:hover {
+            background: #b91c1c;
+            color: white;
+        }
+</style>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="page-title mb-0">My Deliveries</h1>
+        @if (Model.Count > 0)
+        {
+            <p style="font-size:0.88rem;color:var(--muted);margin-top:4px">
+                @Model.Count active order@(Model.Count > 1 ? "s" : "") assigned to you
+            </p>
+        }
+    </div>
+    @if (Model.Count > 0)
+    {
+        <div style="background:#dcfce7;color:#166534;font-size:0.82rem;
+                    font-weight:700;padding:6px 16px;border-radius:99px">
+            On Duty
+        </div>
+    }
+</div>
+
+@if (Model.Count == 0)
+{
+    <div class="card p-5 text-center">
+        <div style="width:72px;height:72px;border-radius:50%;
+                    background:#dcfce7;display:flex;align-items:center;
+                    justify-content:center;font-size:2rem;margin:0 auto 1rem">
+            🛵
+        </div>
+        <h5 style="font-weight:700;margin-bottom:0.4rem">All clear!</h5>
+        <p style="color:var(--muted);font-size:0.9rem;margin:0">
+            No orders assigned right now. Check back soon.
+        </p>
+    </div>
+}
+else
+{
+    foreach (var order in Model)
+    {
+        int secondsLeft = 0;
+        if (order.DeliveryStartTime.HasValue && order.DeliveryTime.HasValue)
+        {
+            double elapsed = (DateTime.Now - order.DeliveryStartTime.Value).TotalSeconds;
+            double total = order.DeliveryTime.Value * 60;
+            double left = total - elapsed;
+            secondsLeft = left > 0 ? (int)left : 0;
+        }
+
+        bool isUrgent = secondsLeft <= 0;
+        string timerId = "dtimer-" + order.OrderId.ToString();
+        string hdrClass = isUrgent ? "del-header-red" : "del-header-green";
+        string btnClass = isUrgent ? "del-btn-red" : "del-btn-green";
+
+        <div class="del-card">
+
+            <!-- Header -->
+            <div class="del-header @hdrClass">
+                <div>
+                    <div style="font-size:0.7rem;font-weight:700;letter-spacing:0.8px;
+                                color:rgba(255,255,255,0.6);margin-bottom:3px">
+                        ORDER
+                    </div>
+                    <div style="font-size:1rem;font-weight:800;color:#fff">
+                        @order.OrderCode
+                    </div>
+                    <div style="font-size:0.78rem;color:rgba(255,255,255,0.7);margin-top:2px">
+                        @order.OrderDate.ToString("dd MMM yyyy, hh:mm tt")
+                    </div>
+                </div>
+                @if (isUrgent)
+                {
+                    <span style="background:#fef2f2;color:#991b1b;font-size:0.72rem;
+                                 font-weight:700;padding:5px 12px;border-radius:99px">
+                        Deliver Now!
+                    </span>
+                }
+                else
+                {
+                    <span style="background:rgba(255,255,255,0.2);color:#fff;
+                                 font-size:0.72rem;font-weight:700;
+                                 padding:5px 12px;border-radius:99px">
+                        Out for Delivery
+                    </span>
+                }
+            </div>
+
+            <!-- Body -->
+            <div class="del-body">
+
+                <!-- Customer + Timer row -->
+                <div class="d-flex gap-3 mb-3">
+
+                    <!-- Customer info -->
+                    <div class="del-info-box">
+                        <div class="del-label">CUSTOMER</div>
+                        <div style="font-weight:700;font-size:0.95rem;
+                                    color:var(--text)">
+                            @order.UserName
+                        </div>
+                        @if (!string.IsNullOrEmpty(order.CustomerPhone))
+                        {
+                            <div style="font-size:0.85rem;color:var(--muted);margin-top:4px">
+                                <i class="bi bi-telephone-fill me-1"
+                                   style="color:#22c55e"></i>
+                                @order.CustomerPhone
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(order.DeliveryAddress))
+                        {
+                            <div style="font-size:0.82rem;color:var(--muted);
+                                        margin-top:4px;line-height:1.4">
+                                <i class="bi bi-geo-alt-fill me-1"
+                                   style="color:#22c55e"></i>
+                                @order.DeliveryAddress
+                            </div>
+                        }
+                        <span class="amount-pill">
+                            &#8377;@order.TotalAmount
+                        </span>
+                    </div>
+
+                    <!-- Timer -->
+                    @if (isUrgent)
+                    {
+                        <div class="timer-box-red d-flex flex-column
+                                    align-items-center justify-content-center">
+                            <div style="font-size:0.7rem;font-weight:700;
+                                        letter-spacing:0.8px;color:#991b1b;
+                                        margin-bottom:6px">
+                                TIME LEFT
+                            </div>
+                            <div style="font-size:1.6rem;font-weight:800;
+                                        color:#dc2626" id="@timerId">
+                                Deliver now!
+                            </div>
+                            @if (order.DeliveryTime.HasValue)
+                            {
+                                <div style="font-size:0.72rem;color:#991b1b;margin-top:4px">
+                                    Est. @order.DeliveryTime min exceeded
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="timer-box-green d-flex flex-column
+                                    align-items-center justify-content-center">
+                            <div style="font-size:0.7rem;font-weight:700;
+                                        letter-spacing:0.8px;color:#166534;
+                                        margin-bottom:6px">
+                                TIME LEFT
+                            </div>
+                            <div style="font-size:2rem;font-weight:800;
+                                        color:#15803d;font-variant-numeric:tabular-nums"
+                                 id="@timerId">
+                                --:--
+                            </div>
+                            @if (order.DeliveryTime.HasValue)
+                            {
+                                <div style="font-size:0.72rem;color:#166534;margin-top:4px">
+                                    Est. @order.DeliveryTime min total
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+
+                <!-- Divider -->
+                <hr style="border-color:var(--border);margin:0 0 14px" />
+
+                <!-- Action button -->
+                <a href="/Delivery/VerifyOTP?orderId=@(order.OrderId)"
+                   class="@btnClass">
+                    <i class="bi bi-shield-check me-2"></i>
+                    Verify OTP and Complete Delivery
+                </a>
+            </div>
+        </div>
+
+        if (!isUrgent && secondsLeft > 0)
+        {
+            int sLeft = secondsLeft;
+            string tId = timerId;
+            <script>
+                (function () {
+                    var s = @(sLeft);
+                    var el = document.getElementById('@(tId)');
+                    function tick() {
+                        if (s <= 0) {
+                            el.textContent = 'Deliver now!';
+                            el.style.color = '#dc2626';
+                            el.style.fontSize = '1.4rem';
+                            return;
+                        }
+                        var m   = Math.floor(s / 60);
+                        var sec = s % 60;
+                        el.textContent = (m < 10 ? '0' : '') + m + ':'
+                                       + (sec < 10 ? '0' : '') + sec;
+                        s--;
+                        setTimeout(tick, 1000);
+                    }
+                    tick();
+                })();
+            </script>
+        }
+    }
+}
