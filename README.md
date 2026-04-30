@@ -370,4 +370,4 @@ This separation means database code is never mixed with UI code. If the database
 
 ## 📄 License
 
-This project is built for educational purposes as part of college curriculum.
+This project was developed by me for educational purposes and is shared for learning and reference.
